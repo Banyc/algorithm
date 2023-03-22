@@ -15,6 +15,11 @@ pub fn reciprocal_scale_u32(val: u32, ep_ro: u32) -> u32 {
     ((val as u64 * ep_ro as u64) >> 32) as u32
 }
 
+#[inline]
+pub fn reciprocal_scale_u64(val: u64, ep_ro: u64) -> u64 {
+    ((val as u128 * ep_ro as u128) >> 64) as u64
+}
+
 #[cfg(test)]
 mod tests {
     use std::hint::black_box;
