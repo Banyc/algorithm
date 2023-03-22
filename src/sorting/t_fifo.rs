@@ -1,11 +1,11 @@
 //! - source: <https://github.com/torvalds/linux/blob/master/net/sched/sch_netem.c>
 
-use std::collections::{BTreeMap, LinkedList};
+use std::collections::{BTreeMap, VecDeque};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TFifo<K, V> {
     root: BTreeMap<K, V>,
-    list: LinkedList<(K, V)>,
+    list: VecDeque<(K, V)>,
     len: usize,
 }
 
@@ -13,7 +13,7 @@ impl<K, V> TFifo<K, V> {
     pub fn new() -> Self {
         TFifo {
             root: BTreeMap::new(),
-            list: LinkedList::new(),
+            list: VecDeque::new(),
             len: 0,
         }
     }
