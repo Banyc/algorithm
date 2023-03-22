@@ -2,7 +2,7 @@
 
 use std::collections::{BTreeMap, LinkedList};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TFifo<K, V> {
     root: BTreeMap<K, V>,
     list: LinkedList<(K, V)>,
@@ -80,5 +80,54 @@ where
 impl<K, V> Default for TFifo<K, V> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn in_order() {
+        let mut fifo = TFifo::default();
+
+        fifo.insert(1, 1);
+        fifo.insert(2, 2);
+        fifo.insert(3, 3);
+
+        assert_eq!(fifo.len(), 3);
+
+        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.pop(), Some((1, 1)));
+        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.pop(), Some((2, 2)));
+        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.pop(), Some((3, 3)));
+        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.pop(), None);
+
+        assert!(fifo.is_empty());
+    }
+
+    #[test]
+    fn disorder() {
+        let mut fifo = TFifo::default();
+
+        fifo.insert(3, 3);
+        fifo.insert(1, 1);
+        fifo.insert(2, 2);
+
+        assert_eq!(fifo.len(), 3);
+
+        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.pop(), Some((1, 1)));
+        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.pop(), Some((2, 2)));
+        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.pop(), Some((3, 3)));
+        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.pop(), None);
+
+        assert!(fifo.is_empty());
     }
 }
