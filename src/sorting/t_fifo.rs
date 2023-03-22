@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, VecDeque};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TFifo<K, V> {
-    root: BTreeMap<K, V>,
+    root: BTreeMap<K, VecDeque<V>>,
     list: VecDeque<(K, V)>,
     len: usize,
 }
@@ -29,7 +29,7 @@ impl<K, V> TFifo<K, V> {
 
 impl<K, V> TFifo<K, V>
 where
-    K: Ord,
+    K: Ord + Clone,
 {
     pub fn insert(&mut self, key: K, value: V) {
         self.len += 1;
@@ -47,7 +47,8 @@ where
             return;
         }
 
-        self.root.insert(key, value);
+        let root_entry = self.root.entry(key).or_insert_with(VecDeque::new);
+        root_entry.push_back(value);
     }
 
     pub fn pop(&mut self) -> Option<(K, V)> {
@@ -57,11 +58,20 @@ where
 
         self.len -= 1;
 
-        if let Some(root_first) = self.root.pop_first() {
-            return Some(root_first);
+        let mut first_entry = match self.root.first_entry() {
+            Some(entry) => entry,
+            None => return self.list.pop_front(),
         };
+        let key = first_entry.key().clone();
+        let values = first_entry.get_mut();
 
-        self.list.pop_front()
+        let value = values.pop_front().unwrap();
+
+        if values.is_empty() {
+            self.root.remove(&key);
+        }
+
+        Some((key, value))
     }
 
     pub fn peak(&self) -> Option<(&K, &V)> {
@@ -69,11 +79,12 @@ where
             return None;
         }
 
-        if let Some(root_first) = self.root.first_key_value() {
-            return Some(root_first);
+        let (key, values) = match self.root.first_key_value() {
+            Some(entry) => entry,
+            None => return self.list.front().map(|(k, v)| (k, v)),
         };
 
-        self.list.front().map(|(k, v)| (k, v))
+        Some((key, values.front().unwrap()))
     }
 }
 
@@ -93,14 +104,17 @@ mod tests {
 
         fifo.insert(1, 1);
         fifo.insert(2, 2);
+        fifo.insert(2, 22);
         fifo.insert(3, 3);
 
-        assert_eq!(fifo.len(), 3);
+        assert_eq!(fifo.len(), 4);
 
         assert_eq!(fifo.peak(), Some((&1, &1)));
         assert_eq!(fifo.pop(), Some((1, 1)));
         assert_eq!(fifo.peak(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
+        assert_eq!(fifo.peak(), Some((&2, &22)));
+        assert_eq!(fifo.pop(), Some((2, 22)));
         assert_eq!(fifo.peak(), Some((&3, &3)));
         assert_eq!(fifo.pop(), Some((3, 3)));
         assert_eq!(fifo.peak(), None);
@@ -115,12 +129,15 @@ mod tests {
 
         fifo.insert(3, 3);
         fifo.insert(1, 1);
+        fifo.insert(1, 11);
         fifo.insert(2, 2);
 
-        assert_eq!(fifo.len(), 3);
+        assert_eq!(fifo.len(), 4);
 
         assert_eq!(fifo.peak(), Some((&1, &1)));
         assert_eq!(fifo.pop(), Some((1, 1)));
+        assert_eq!(fifo.peak(), Some((&1, &11)));
+        assert_eq!(fifo.pop(), Some((1, 11)));
         assert_eq!(fifo.peak(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
         assert_eq!(fifo.peak(), Some((&3, &3)));
