@@ -14,3 +14,38 @@ pub fn reciprocal_scale_u16(val: u16, ep_ro: u16) -> u16 {
 pub fn reciprocal_scale_u32(val: u32, ep_ro: u32) -> u32 {
     ((val as u64 * ep_ro as u64) >> 32) as u32
 }
+
+#[cfg(test)]
+mod tests {
+    use std::hint::black_box;
+
+    use super::*;
+
+    #[bench]
+    fn bench_reciprocal_scale_u8(b: &mut test::Bencher) {
+        b.iter(|| {
+            for group_size in 1..u8::MAX {
+                for value in 0..u8::MAX {
+                    let value = black_box(value);
+                    let group_size = black_box(group_size);
+                    let index = reciprocal_scale_u8(value, group_size);
+                    black_box(index);
+                }
+            }
+        })
+    }
+
+    #[bench]
+    fn bench_modulo_u8(b: &mut test::Bencher) {
+        b.iter(|| {
+            for group_size in 1..u8::MAX {
+                for value in 0..u8::MAX {
+                    let value = black_box(value);
+                    let group_size = black_box(group_size);
+                    let index = value % group_size;
+                    black_box(index);
+                }
+            }
+        })
+    }
+}
