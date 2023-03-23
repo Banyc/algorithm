@@ -96,6 +96,8 @@ impl<K, V> Default for TFifo<K, V> {
 
 #[cfg(test)]
 mod tests {
+    use std::hint::black_box;
+
     use super::*;
 
     #[test]
@@ -146,5 +148,55 @@ mod tests {
         assert_eq!(fifo.pop(), None);
 
         assert!(fifo.is_empty());
+    }
+
+    const N: usize = 1000;
+
+    #[bench]
+    fn bench_in_order(b: &mut test::Bencher) {
+        let mut fifo = TFifo::default();
+
+        b.iter(|| {
+            for i in 0..N {
+                let fifo = black_box(&mut fifo);
+                fifo.insert(black_box(i), black_box(i));
+            }
+            for _ in 0..N {
+                let fifo = black_box(&mut fifo);
+                black_box(fifo.pop());
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_vecdeqeue_in_order(b: &mut test::Bencher) {
+        let mut vecd = VecDeque::default();
+
+        b.iter(|| {
+            for i in 0..N {
+                let vecd = black_box(&mut vecd);
+                vecd.push_back(black_box((i, i)));
+            }
+            for _ in 0..N {
+                let vecd = black_box(&mut vecd);
+                black_box(vecd.pop_front());
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_disorder(b: &mut test::Bencher) {
+        let mut fifo = TFifo::default();
+
+        b.iter(|| {
+            for i in (0..N).rev() {
+                let fifo = black_box(&mut fifo);
+                fifo.insert(black_box(i), black_box(i));
+            }
+            for _ in 0..N {
+                let fifo = black_box(&mut fifo);
+                black_box(fifo.pop());
+            }
+        });
     }
 }
