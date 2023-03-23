@@ -58,15 +58,25 @@ where
 
         self.len -= 1;
 
+        // Pop the first value from the list if there are no root entries
         let mut first_entry = match self.root.first_entry() {
             Some(entry) => entry,
             None => return self.list.pop_front(),
         };
+
+        // Pop the first value from the list if it is smaller than the first root entry
+        if let Some((k, _)) = self.list.front() {
+            if k < first_entry.key() {
+                return self.list.pop_front();
+            }
+        }
+
+        // Pop the first value from the first root entry
         let key = first_entry.key().clone();
         let values = first_entry.get_mut();
-
         let value = values.pop_front().unwrap();
 
+        // Remove the root entry if it is empty
         if values.is_empty() {
             self.root.remove(&key);
         }
@@ -79,11 +89,20 @@ where
             return None;
         }
 
+        // Peak the first value from the list if there are no root entries
         let (key, values) = match self.root.first_key_value() {
             Some(entry) => entry,
             None => return self.list.front().map(|(k, v)| (k, v)),
         };
 
+        // Peak the first value from the list if it is smaller than the first root entry
+        if let Some((k, _)) = self.list.front() {
+            if k < key {
+                return self.list.front().map(|(k, v)| (k, v));
+            }
+        }
+
+        // Peak the first value from the first root entry
         Some((key, values.front().unwrap()))
     }
 }
@@ -140,6 +159,28 @@ mod tests {
         assert_eq!(fifo.pop(), Some((1, 1)));
         assert_eq!(fifo.peak(), Some((&1, &11)));
         assert_eq!(fifo.pop(), Some((1, 11)));
+        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.pop(), Some((2, 2)));
+        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.pop(), Some((3, 3)));
+        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.pop(), None);
+
+        assert!(fifo.is_empty());
+    }
+
+    #[test]
+    fn disorder_2() {
+        let mut fifo = TFifo::default();
+
+        fifo.insert(1, 1);
+        fifo.insert(3, 3);
+        fifo.insert(2, 2);
+
+        assert_eq!(fifo.len(), 3);
+
+        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.pop(), Some((1, 1)));
         assert_eq!(fifo.peak(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
         assert_eq!(fifo.peak(), Some((&3, &3)));
