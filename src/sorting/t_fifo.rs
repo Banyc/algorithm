@@ -84,25 +84,25 @@ where
         Some((key, value))
     }
 
-    pub fn peak(&self) -> Option<(&K, &V)> {
+    pub fn peek(&self) -> Option<(&K, &V)> {
         if self.len == 0 {
             return None;
         }
 
-        // Peak the first value from the list if there are no root entries
+        // Peek the first value from the list if there are no root entries
         let (key, values) = match self.root.first_key_value() {
             Some(entry) => entry,
             None => return self.list.front().map(|(k, v)| (k, v)),
         };
 
-        // Peak the first value from the list if it is smaller than the first root entry
+        // Peek the first value from the list if it is smaller than the first root entry
         if let Some((k, _)) = self.list.front() {
             if k < key {
                 return self.list.front().map(|(k, v)| (k, v));
             }
         }
 
-        // Peak the first value from the first root entry
+        // Peek the first value from the first root entry
         Some((key, values.front().unwrap()))
     }
 }
@@ -130,15 +130,15 @@ mod tests {
 
         assert_eq!(fifo.len(), 4);
 
-        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.peek(), Some((&1, &1)));
         assert_eq!(fifo.pop(), Some((1, 1)));
-        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.peek(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
-        assert_eq!(fifo.peak(), Some((&2, &22)));
+        assert_eq!(fifo.peek(), Some((&2, &22)));
         assert_eq!(fifo.pop(), Some((2, 22)));
-        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.peek(), Some((&3, &3)));
         assert_eq!(fifo.pop(), Some((3, 3)));
-        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.peek(), None);
         assert_eq!(fifo.pop(), None);
 
         assert!(fifo.is_empty());
@@ -155,15 +155,15 @@ mod tests {
 
         assert_eq!(fifo.len(), 4);
 
-        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.peek(), Some((&1, &1)));
         assert_eq!(fifo.pop(), Some((1, 1)));
-        assert_eq!(fifo.peak(), Some((&1, &11)));
+        assert_eq!(fifo.peek(), Some((&1, &11)));
         assert_eq!(fifo.pop(), Some((1, 11)));
-        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.peek(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
-        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.peek(), Some((&3, &3)));
         assert_eq!(fifo.pop(), Some((3, 3)));
-        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.peek(), None);
         assert_eq!(fifo.pop(), None);
 
         assert!(fifo.is_empty());
@@ -179,13 +179,13 @@ mod tests {
 
         assert_eq!(fifo.len(), 3);
 
-        assert_eq!(fifo.peak(), Some((&1, &1)));
+        assert_eq!(fifo.peek(), Some((&1, &1)));
         assert_eq!(fifo.pop(), Some((1, 1)));
-        assert_eq!(fifo.peak(), Some((&2, &2)));
+        assert_eq!(fifo.peek(), Some((&2, &2)));
         assert_eq!(fifo.pop(), Some((2, 2)));
-        assert_eq!(fifo.peak(), Some((&3, &3)));
+        assert_eq!(fifo.peek(), Some((&3, &3)));
         assert_eq!(fifo.pop(), Some((3, 3)));
-        assert_eq!(fifo.peak(), None);
+        assert_eq!(fifo.peek(), None);
         assert_eq!(fifo.pop(), None);
 
         assert!(fifo.is_empty());
